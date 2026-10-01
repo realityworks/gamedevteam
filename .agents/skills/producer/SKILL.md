@@ -31,36 +31,69 @@ The **Producer** is the operational backbone and orchestrator of the game develo
 
 ```mermaid
 flowchart TD
-    Producer["Producer (Orchestration & Schedule)"]
-    GD["Game Designer"]
-    LP["Lead Programmer"]
-    AD["Art Director"]
-    QA["QA & Playtesting Engineer"]
+    User(["USER (Executive Sponsor & Sign-Off)"])
+    Producer["Producer (Master Orchestrator & Task Manager)"]
+    GD["Game Designer Subagent"]
+    LP["Lead Programmer Subagent"]
+    AD["Art Director Subagent"]
+    GP["Gameplay Dev Subagent"]
+    LD["Level Designer Subagent"]
+    TA["Tech Artist Subagent"]
+    QA["QA Tester Subagent"]
 
-    Producer <-->|"Feature Scope & Priorities"| GD
-    Producer <-->|"Tech Feasibility & Velocity"| LP
-    Producer <-->|"Art Pipeline & Deadlines"| AD
-    Producer <-->|"Release Readiness & Bug Triage"| QA
+    User <-->|"Pitch Intake & Major Stage Sign-Offs"| Producer
+    Producer -->|"Stage 1: GDD & Scope"| GD
+    Producer -->|"Stage 2: Architecture Spec"| LP
+    Producer -->|"Stage 2: Visual Bible"| AD
+    Producer -->|"Stage 3: Graybox Arena"| LD
+    Producer -->|"Stage 3: Character Controller & FSM"| GP
+    Producer -->|"Stage 3: Shaders & VFX"| TA
+    Producer -->|"Stage 4: Test Plan & Bug Reports"| QA
 ```
-
-| Counterpart | Key Topics | Frequency / Trigger |
-| :--- | :--- | :--- |
-| **Game Designer** | Core loop scope, GDD sign-off, feature cuts/expansions | Sprint planning & feature review |
-| **Lead Programmer** | Architecture milestones, tech debt, engine tasks, programmer allocation | Sprint planning & weekly sync |
-| **Art Director** | Art bible milestones, asset delivery deadlines, tech-art constraints | Sprint planning & asset review |
-| **QA Lead** | Test plan schedules, bug triage (P0-P3), build release sign-offs | Milestone end & pre-build lock |
 
 ---
 
-## 3. Step-by-Step Production Workflow
+## 3. The 4 Major Stages & User Sign-Off Gates
 
-### Phase 1: Pre-Production & Scope Definition
-1. Gather initial game concept or pitch document from Game Designer.
-2. Convene architecture alignment with Lead Programmer and visual alignment with Art Director.
-3. Establish production constraints:
-   - Target platforms & minimum hardware specifications.
-   - Milestone schedule: Pitch $\rightarrow$ Prototype $\rightarrow$ Vertical Slice $\rightarrow$ Alpha $\rightarrow$ Beta $\rightarrow$ Gold Master.
-4. Output: `deliverables/docs/MASTER_SCHEDULE.md` and `deliverables/docs/RISK_LOG.md`.
+The Producer manages all subagents across 4 distinct production stages. **Work pauses at the end of each stage for the User's explicit sign-off:**
+
+```mermaid
+flowchart LR
+    P["User Pitch"] --> S1["Major Stage 1:<br/>Design & Scope (GDD)"]
+    S1 --> G1{"User Gate 1:<br/>Approve GDD?"}
+    G1 -- Approved --> S2["Major Stage 2:<br/>Tech Architecture & Art Bible"]
+    G1 -- Revisions --> S1
+    S2 --> G2{"User Gate 2:<br/>Approve Specs?"}
+    G2 -- Approved --> S3["Major Stage 3:<br/>Playable Prototype & Code"]
+    G2 -- Revisions --> S2
+    S3 --> G3{"User Gate 3:<br/>Approve Prototype?"}
+    G3 -- Approved --> S4["Major Stage 4:<br/>QA Verification & Release"]
+    G3 -- Revisions --> S3
+    S4 --> G4{"User Gate 4:<br/>Final Milestone Sign-Off"}
+```
+
+### Major Stage 1: Concept & Game Design (Gate 1)
+1. **Intake Pitch**: Receive user's seed idea (or trigger autonomous synthesis).
+2. **Dispatch Game Designer**: Direct Game Designer to author `deliverables/docs/GDD.md`.
+3. **Formulate Sprint Plan**: Producer authors `deliverables/docs/SPRINT_PLAN.md` with estimates and milestones.
+4. **Gate 1 Halt**: Present GDD & Sprint Plan to User. **Halt and request User Sign-Off.**
+
+### Major Stage 2: Pre-Production, Tech Architecture & Art Bible (Gate 2)
+1. **Dispatch Lead Programmer**: Author `deliverables/docs/TECH_SPEC.md` (engine loop, state patterns, performance budget).
+2. **Dispatch Art Director**: Author `deliverables/art/ART_BIBLE.md` (palettes, silhouettes, mood board).
+3. **Producer Feasibility Check**: Verify asset budgets align with engine frame rate.
+4. **Gate 2 Halt**: Present Tech Spec & Art Bible to User. **Halt and request User Sign-Off.**
+
+### Major Stage 3: Playable Prototype & Core Mechanics (Gate 3)
+1. **Dispatch Level Designer**: Build graybox layout in `deliverables/docs/LEVEL_DESIGN.md`.
+2. **Dispatch Gameplay Programmer**: Code character controller and state machine in `deliverables/code/`.
+3. **Dispatch Technical Artist**: Author master shaders and VFX baseline in `deliverables/art/`.
+4. **Gate 3 Halt**: Present playable code, controls, and graybox level to User. **Halt and request User Sign-Off.**
+
+### Major Stage 4: QA Verification & Milestone Sign-Off (Gate 4)
+1. **Dispatch QA Playtester**: Formulate `deliverables/qa/TEST_PLAN.md` and execute smoke testing.
+2. **Triage Bugs**: Log all defects in `deliverables/qa/BUG_REPORTS.md`.
+3. **Gate 4 Halt**: Present final verification summary and sign-off report to User.
 
 ### Phase 2: Sprint & Task Breakdown
 1. Break down approved GDD features into epics and actionable user stories.

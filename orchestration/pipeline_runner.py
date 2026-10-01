@@ -37,6 +37,34 @@ except ImportError:
     from .orchestrator import GameDevOrchestrator
 
 
+MAJOR_STAGES = [
+    {
+        "stage": 1,
+        "title": "Design & Scope",
+        "gate": "Gate 1: Game Design Document (GDD) & Sprint Plan Approval",
+        "steps": [1, 2]
+    },
+    {
+        "stage": 2,
+        "title": "Tech Architecture & Visual Bible",
+        "gate": "Gate 2: Technical Architecture & Art Bible Approval",
+        "steps": [3, 4]
+    },
+    {
+        "stage": 3,
+        "title": "Playable Prototype & Core Mechanics",
+        "gate": "Gate 3: Playable Prototype, Controls & Level Blockout Approval",
+        "steps": [5, 6, 7]
+    },
+    {
+        "stage": 4,
+        "title": "QA Verification & Milestone Release",
+        "gate": "Gate 4: QA Acceptance, Test Matrix & Release Sign-Off",
+        "steps": [8]
+    }
+]
+
+
 class PipelineRunner:
     def __init__(self):
         self.orchestrator = GameDevOrchestrator()
@@ -58,12 +86,12 @@ class PipelineRunner:
         self._render_dashboard()
 
     def _render_dashboard(self):
-        """Generates a Markdown dashboard for easy reading and review."""
+        """Generates a Markdown dashboard organized by Major Stages & Gates."""
         if not self.status:
             return
 
         lines = [
-            f"# GameDevStudio — Live Production Dashboard",
+            f"# GameDevStudio — Master Production Dashboard",
             f"",
             f"**Workflow**: `{self.status.get('workflow')}`  ",
             f"**Mode**: `{self.status.get('mode')}`  ",
@@ -72,33 +100,47 @@ class PipelineRunner:
             f"",
             f"---",
             f"",
-            f"## Pipeline Steps & Deliverables",
-            f"",
-            f"| Step | Role | Action | Deliverable File | Status | Review Gate |",
-            f"| :--- | :--- | :--- | :--- | :--- | :--- |"
+            f"## Production Stages & User Sign-Off Gates",
+            f""
         ]
 
-        for s in self.status.get("steps", []):
-            st = s.get("status", "Pending")
-            icon = "⚪"
-            if st == "Completed":
-                icon = "🟢"
-            elif st == "In Progress":
-                icon = "🟡"
-            elif st == "Awaiting Review":
-                icon = "🟠"
+        steps_by_num = {s["step"]: s for s in self.status.get("steps", [])}
 
-            review_str = "Approved" if s.get("approved") else ("Needs Review" if st == "Completed" else "Pending")
-            lines.append(f"| {s['step']} | **{s['role_title']}** | {s['action']} | [`{s['target_output']}`](../../{s['target_output']}) | {icon} {st} | {review_str} |")
+        for stg in MAJOR_STAGES:
+            stage_num = stg["stage"]
+            stage_steps = [steps_by_num[n] for n in stg["steps"] if n in steps_by_num]
+            all_done = all(s.get("status") == "Completed" and s.get("approved") for s in stage_steps)
+            any_in_prog = any(s.get("status") == "In Progress" for s in stage_steps)
+
+            stg_status_str = "🟢 APPROVED" if all_done else ("🟡 IN PROGRESS" if any_in_prog else "⚪ PENDING")
+            lines.append(f"### Major Stage {stage_num}: {stg['title']} — {stg_status_str}")
+            lines.append(f"**Sign-Off Gate**: *{stg['gate']}*")
+            lines.append("")
+            lines.append(f"| Step | Role | Action | Deliverable File | Step Status | Review Gate |")
+            lines.append(f"| :--- | :--- | :--- | :--- | :--- | :--- |")
+
+            for s in stage_steps:
+                st = s.get("status", "Pending")
+                icon = "⚪"
+                if st == "Completed":
+                    icon = "🟢"
+                elif st == "In Progress":
+                    icon = "🟡"
+                elif st == "Awaiting Review":
+                    icon = "🟠"
+                review_str = "Approved" if s.get("approved") else ("Needs Review" if st == "Completed" else "Waiting")
+                lines.append(f"| {s['step']} | **{s['role_title']}** | {s['action']} | [`{s['target_output']}`](../../{s['target_output']}) | {icon} {st} | {review_str} |")
+
+            lines.append("")
 
         lines.extend([
-            f"",
             f"---",
             f"",
-            f"## How to Step In & Review",
-            f"- Run `python3 orchestration/pipeline_runner.py --status` to inspect current progress.",
-            f"- Check generated files directly inside `deliverables/`.",
-            f"- Run `python3 orchestration/pipeline_runner.py --approve-step <N>` to sign off on a deliverable.",
+            f"## User Sign-Off Controls",
+            f"- Run `python3 orchestration/pipeline_runner.py --status` to inspect current stage.",
+            f"- Review generated deliverables in `deliverables/`.",
+            f"- Approve an entire stage: `python3 orchestration/pipeline_runner.py --approve-stage <1-4>`",
+            f"- Approve an individual step: `python3 orchestration/pipeline_runner.py --approve-step <N>`",
             f""
         ])
 
@@ -264,6 +306,29 @@ class PipelineRunner:
             print("\n[✓] Exited live watch.")
 
 
+    def approve_stage(self, stage_number: int):
+        target_stage = None
+        for stg in MAJOR_STAGES:
+            if stg["stage"] == stage_number:
+                target_stage = stg
+                break
+        if not target_stage:
+            print(f"Error: Unknown stage {stage_number}. Available: 1, 2, 3, 4")
+            return
+
+        for step_num in target_stage["steps"]:
+            self.update_step_status(step_num, "Completed", approved=True)
+
+        print(f"\n[✓] Stage {stage_number} ({target_stage['title']}) APPROVED.")
+        print(f"Sign-off Gate '{target_stage['gate']}' satisfied.")
+        if stage_number < len(MAJOR_STAGES):
+            next_stg = MAJOR_STAGES[stage_number]
+            print(f"[>] Major Stage {next_stg['stage']} ({next_stg['title']}) is now UNLOCKED and ready for execution.\n")
+        else:
+            print("[🎉] All 4 Major Stages complete! Final Milestone reached.\n")
+        self._save_status()
+
+
 def main():
     parser = argparse.ArgumentParser(description="GameDevTeam Background Pipeline Runner")
     parser.add_argument("--init", action="store_true", help="Initialize the pipeline and populate deliverables from templates")
@@ -272,6 +337,7 @@ def main():
     parser.add_argument("--watch", nargs="?", const=2, type=int, default=None, help="Watch live dashboard in real-time (default refresh: 2s)")
     parser.add_argument("--cat", action="store_true", help="Print the raw markdown dashboard to stdout")
     parser.add_argument("--approve-step", type=int, help="Approve and mark a step deliverable as reviewed")
+    parser.add_argument("--approve-stage", type=int, help="Approve an entire Major Stage (1-4) and unlock next stage")
     parser.add_argument("--complete-step", type=int, help="Mark a step as completed")
 
     args = parser.parse_args()
@@ -287,6 +353,11 @@ def main():
 
     if args.cat:
         runner.print_raw_dashboard()
+        return
+
+    if args.approve_stage:
+        runner.approve_stage(args.approve_stage)
+        runner.print_status()
         return
 
     if args.approve_step:
