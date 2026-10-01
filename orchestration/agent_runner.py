@@ -16,9 +16,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 LOGS_DIR = BASE_DIR / "deliverables" / "logs"
 
 class AgentRunner:
-    def __init__(self, base_dir: Optional[Path] = None):
+    def __init__(self, base_dir: Optional[Path] = None, model: Optional[str] = None, effort: Optional[str] = None):
         self.base_dir = base_dir or BASE_DIR
         self.agy_bin = self._find_agy()
+        self.model = model or os.environ.get("AGY_MODEL")
+        self.effort = effort or os.environ.get("AGY_EFFORT")
 
     def _find_agy(self) -> str:
         bin_path = shutil.which("agy")
@@ -150,6 +152,10 @@ class AgentRunner:
             "-p",
             prompt
         ]
+        if self.model:
+            cmd.extend(["--model", self.model])
+        if self.effort:
+            cmd.extend(["--effort", self.effort])
 
         if log_callback:
             log_callback(f"Launching autonomous agent [{step['role_title']}] for Step {step_num}...")

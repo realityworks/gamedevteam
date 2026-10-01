@@ -71,11 +71,11 @@ MAJOR_STAGES = [
 
 
 class PipelineRunner:
-    def __init__(self, base_dir: Optional[Path] = None):
+    def __init__(self, base_dir: Optional[Path] = None, model: Optional[str] = None, effort: Optional[str] = None):
         self.base_dir = base_dir or BASE_DIR
         self.orchestrator = GameDevOrchestrator()
         self.status = self._load_status()
-        self.agent_runner = AgentRunner(self.base_dir)
+        self.agent_runner = AgentRunner(self.base_dir, model=model, effort=effort)
 
     def _load_status(self) -> Dict[str, Any]:
         if STATUS_FILE.exists():
@@ -481,9 +481,11 @@ def main():
     parser.add_argument("--approve-step", type=int, help="Approve and mark a step deliverable as reviewed")
     parser.add_argument("--approve-stage", type=int, help="Approve an entire Major Stage (1-4) and unlock next stage")
     parser.add_argument("--complete-step", type=int, help="Mark a step as completed")
+    parser.add_argument("--model", type=str, default=None, help="Model to use for autonomous agents (e.g. 'Gemini 3.1 Pro (High)', 'Claude Sonnet 4.6 (Thinking)')")
+    parser.add_argument("--effort", type=str, default=None, choices=["low", "medium", "high", "max"], help="Reasoning effort level (low, medium, high, max)")
 
     args = parser.parse_args()
-    runner = PipelineRunner()
+    runner = PipelineRunner(model=args.model, effort=args.effort)
 
     if args.reset:
         runner.reset_pipeline(args.pitch)
