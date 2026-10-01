@@ -144,7 +144,41 @@ python3 orchestration/run_orchestration.py --pitch
 
 ---
 
-## 5. Working with Antigravity Agents
+## 5. Background Execution, Review Gates & Deliverable Population
+
+The orchestration supports fully backgrounded execution, live status tracking, and step-in review gates:
+
+### Background Pipeline Runner (`pipeline_runner.py`)
+You can initialize the production pipeline and let it run asynchronously:
+
+```bash
+# 1. Initialize pipeline and populate deliverable files from templates
+python3 orchestration/pipeline_runner.py --init --pitch "Cyberpunk gravity stealth"
+
+# Or initialize in autonomous synthesis mode (no prompt provided):
+python3 orchestration/pipeline_runner.py --init
+
+# 2. Check live progress and review gates anytime:
+python3 orchestration/pipeline_runner.py --status
+
+# 3. Approve a deliverable when you have reviewed it:
+python3 orchestration/pipeline_runner.py --approve-step 1
+```
+
+### Automatic Template Population into `deliverables/`
+Template files in `templates/` serve as the clean structural schemas. When the pipeline runs:
+- The templates are automatically instantiated into the working `deliverables/` folders:
+  - `templates/GDD_TEMPLATE.md` $\rightarrow$ `deliverables/docs/GDD.md`
+  - `templates/TECH_SPEC_TEMPLATE.md` $\rightarrow$ `deliverables/docs/TECH_SPEC.md`
+  - `templates/SPRINT_PLAN_TEMPLATE.md` $\rightarrow$ `deliverables/docs/SPRINT_PLAN.md`
+  - `templates/ART_BIBLE_TEMPLATE.md` $\rightarrow$ `deliverables/art/ART_BIBLE.md`
+  - `templates/QA_TEST_PLAN_TEMPLATE.md` $\rightarrow$ `deliverables/qa/TEST_PLAN.md`
+- The specialized agents (Game Designer, Lead Programmer, Art Director) populate the game-specific content directly within these deliverable files.
+- A live markdown dashboard is continuously maintained at `deliverables/docs/PROJECT_DASHBOARD.md`.
+
+---
+
+## 6. Working with Antigravity Agents
 
 Because the skills are formatted according to the standard Antigravity skill structure in `.agents/skills/`, Antigravity automatically detects all 9 skills. You can prompt the agent naturally:
 
@@ -152,3 +186,4 @@ Because the skills are formatted according to the standard Antigravity skill str
 - *"As the Lead Programmer, author the architecture specification for our combat state machine."*
 - *"As the Art Director, establish the visual bible for a cyberpunk roguelite."*
 - *"As the QA Tester, generate a comprehensive test plan for player jump and dash physics."*
+- You can also run tasks as autonomous goals using `/goal` to let the agents work through milestones in the background while you review deliverables as they are populated.

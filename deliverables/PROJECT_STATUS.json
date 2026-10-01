@@ -1,0 +1,106 @@
+{
+  "workflow": "pitch_to_prototype",
+  "mode": "AUTONOMOUS_SYNTHESIS",
+  "mode_description": "Autonomous Design Synthesis: Unique Pattern Combination + Distinct Visual Representation",
+  "user_pitch": null,
+  "initialized_at": "2026-10-01T14:55:08.295391",
+  "current_step": 1,
+  "steps": [
+    {
+      "step": 1,
+      "role_id": "game_designer",
+      "role_title": "Game Designer",
+      "action": "Draft Core Mechanics & Design Pillars (Pitch Intake / Autonomous Synthesis)",
+      "target_output": "deliverables/docs/GDD.md",
+      "notes": "If pitch provided: expand into full GDD. If no pitch: autonomously synthesize a unique pattern combination + visual representation.",
+      "directive": "### Autonomous Creative Synthesis Mode (No Prompt Provided):\nYou must discover and formulate an original, non-clich\u00e9 game concept by synthesizing a unique combination of orthogonal **Game Design Patterns** paired with an **Unconventional Visual Representation**.\n\n#### 1. Game Design Patterns Matrix (Select 2-3 orthogonal patterns):\n- **Locomotion / Momentum**: Kinetic recoil-propulsion, orbital slinging, gravity inversion, wall-running friction.\n- **Temporal / Causality**: Time-echo / ghost replays (cooperating with past self), asynchronous ticks, scrub-back rewind.\n- **Spatial / Dimensional**: Non-Euclidean topology, fold-out origami geometry, perspective alignment puzzle-spaces.\n- **Resource / Friction**: Degradable abilities as ammunition, health-as-currency, memory sacrifice progression.\n- **Perception / Sensorium**: Echoloaction wave visualization, thermal conductivity, light/shadow phase shifting.\n\n#### 2. Unique Visual Representation (Select 1 distinct aesthetic):\n- **Risograph Print**: Offset grainy textures, neon spot inks, and CMYK halftone screen dithering.\n- **Architectural Cyanotype / Blueprint**: Pristine white drafting lines on deep Prussian blue drafting paper.\n- **Stained-Glass Leadlight**: Heavy black lead caming dividing luminous, refractive colored jewel-tone glass.\n- **Microscopic Dark-Field Bioluminescence**: Phosphorescent organisms against deep aqueous black, chromatic aberration.\n- **Bauhaus Geometric Modernism**: Primary colors (red, yellow, blue), stark geometric primitives, clean typography.\n- **Woodblock Ukiyo-e**: Dynamic Japanese woodblock grain, washi paper texture, and stylized sumi-e ink washes.\n- **Tactile Claymation**: Hand-sculpted clay with visible thumbprint seams, stop-motion framerate jitter (12-15 fps).\n\n#### 3. Synthesis Requirements:\n1. Name the game and define its high concept in one punchy sentence.\n2. Explain how the chosen mechanics patterns create unexpected emergent gameplay.\n3. Explain how the visual representation reinforces player readability and game feel.\n4. Author the complete Game Design Document in `deliverables/docs/GDD.md` following `templates/GDD_TEMPLATE.md`.\n5. Notify the Producer, Lead Programmer, and Art Director to initiate downstream tasks.",
+      "status": "In Progress",
+      "approved": false,
+      "completed_at": null
+    },
+    {
+      "step": 2,
+      "role_id": "producer",
+      "role_title": "Producer",
+      "action": "Create Prototype Milestone Schedule & Backlog",
+      "target_output": "deliverables/docs/SPRINT_PLAN.md",
+      "notes": "Deconstruct GDD into prototype sprint deliverables.",
+      "directive": "Review deliverables from previous steps and execute Step 2: Create Prototype Milestone Schedule & Backlog. Target output: `deliverables/docs/SPRINT_PLAN.md`. Notes: Deconstruct GDD into prototype sprint deliverables.",
+      "status": "Pending",
+      "approved": false,
+      "completed_at": null
+    },
+    {
+      "step": 3,
+      "role_id": "lead_programmer",
+      "role_title": "Lead Programmer",
+      "action": "Author Technical Architecture RFC",
+      "target_output": "deliverables/docs/TECH_SPEC.md",
+      "notes": "Select engine/runtime, state machine pattern, and fixed update loops.",
+      "directive": "Review deliverables from previous steps and execute Step 3: Author Technical Architecture RFC. Target output: `deliverables/docs/TECH_SPEC.md`. Notes: Select engine/runtime, state machine pattern, and fixed update loops.",
+      "status": "Pending",
+      "approved": false,
+      "completed_at": null
+    },
+    {
+      "step": 4,
+      "role_id": "art_director",
+      "role_title": "Art Director",
+      "action": "Author Visual Bible & Mood Board",
+      "target_output": "deliverables/art/ART_BIBLE.md",
+      "notes": "Establish visual style, shape language, and color palette.",
+      "directive": "Review deliverables from previous steps and execute Step 4: Author Visual Bible & Mood Board. Target output: `deliverables/art/ART_BIBLE.md`. Notes: Establish visual style, shape language, and color palette.",
+      "status": "Pending",
+      "approved": false,
+      "completed_at": null
+    },
+    {
+      "step": 5,
+      "role_id": "level_designer",
+      "role_title": "Level & Environment Designer",
+      "action": "Build Graybox Movement Test Arena",
+      "target_output": "deliverables/docs/LEVEL_DESIGN.md",
+      "notes": "Set up jumping gaps, slopes, and obstacle courses matching player metrics.",
+      "directive": "Review deliverables from previous steps and execute Step 5: Build Graybox Movement Test Arena. Target output: `deliverables/docs/LEVEL_DESIGN.md`. Notes: Set up jumping gaps, slopes, and obstacle courses matching player metrics.",
+      "status": "Pending",
+      "approved": false,
+      "completed_at": null
+    },
+    {
+      "step": 6,
+      "role_id": "gameplay_programmer",
+      "role_title": "Gameplay & Systems Programmer",
+      "action": "Implement Character Controller & FSM",
+      "target_output": "deliverables/code/src/controllers/player_controller.py",
+      "notes": "Build movement, jumping, coyote time, and input buffering.",
+      "directive": "Review deliverables from previous steps and execute Step 6: Implement Character Controller & FSM. Target output: `deliverables/code/src/controllers/player_controller.py`. Notes: Build movement, jumping, coyote time, and input buffering.",
+      "status": "Pending",
+      "approved": false,
+      "completed_at": null
+    },
+    {
+      "step": 7,
+      "role_id": "technical_artist",
+      "role_title": "Technical Artist",
+      "action": "Setup Master Shaders & Performance Baseline",
+      "target_output": "deliverables/art/shaders/",
+      "notes": "Provide test materials and set draw call budget monitors.",
+      "directive": "Review deliverables from previous steps and execute Step 7: Setup Master Shaders & Performance Baseline. Target output: `deliverables/art/shaders/`. Notes: Provide test materials and set draw call budget monitors.",
+      "status": "Pending",
+      "approved": false,
+      "completed_at": null
+    },
+    {
+      "step": 8,
+      "role_id": "qa_playtester",
+      "role_title": "QA & Playtesting Engineer",
+      "action": "Execute Prototype Smoke Test & Report Edge Cases",
+      "target_output": "deliverables/qa/TEST_PLAN.md",
+      "notes": "Validate physics edge cases, collision boundaries, and game feelsnappiness.",
+      "directive": "Review deliverables from previous steps and execute Step 8: Execute Prototype Smoke Test & Report Edge Cases. Target output: `deliverables/qa/TEST_PLAN.md`. Notes: Validate physics edge cases, collision boundaries, and game feelsnappiness.",
+      "status": "Pending",
+      "approved": false,
+      "completed_at": null
+    }
+  ]
+}
