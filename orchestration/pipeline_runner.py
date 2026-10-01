@@ -219,15 +219,9 @@ class PipelineRunner:
             if s["step"] == step_number:
                 s["status"] = new_status
                 s["approved"] = approved
-                if new_status == "Completed":
+                if approved:
+                    s["status"] = "Completed"
                     s["completed_at"] = datetime.datetime.now().isoformat()
-                    # Advance next step to In Progress if exists
-                    next_step = step_number + 1
-                    for ns in self.status.get("steps", []):
-                        if ns["step"] == next_step and ns["status"] == "Pending":
-                            ns["status"] = "In Progress"
-                            self.status["current_step"] = next_step
-                            break
                 break
         self._save_status()
 
@@ -350,7 +344,8 @@ class PipelineRunner:
         success = self.agent_runner.run_step_process(step, user_pitch, log_callback=log_callback or print)
 
         if success:
-            step["status"] = "Completed"
+            step["status"] = "Awaiting Review"
+            step["approved"] = False
             step["completed_at"] = datetime.datetime.now().isoformat()
             self._save_status()
             return True
