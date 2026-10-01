@@ -118,8 +118,9 @@ class PipelineRunner:
             stage_steps = [steps_by_num[n] for n in stg["steps"] if n in steps_by_num]
             all_done = all(s.get("status") == "Completed" and s.get("approved") for s in stage_steps)
             any_in_prog = any(s.get("status") == "In Progress" for s in stage_steps)
+            any_awaiting = any(s.get("status") == "Awaiting Review" for s in stage_steps)
 
-            stg_status_str = "🟢 APPROVED" if all_done else ("🟡 IN PROGRESS" if any_in_prog else "⚪ PENDING")
+            stg_status_str = "🟢 APPROVED" if all_done else ("🟠 AWAITING REVIEW" if any_awaiting else ("🟡 IN PROGRESS" if any_in_prog else "⚪ PENDING"))
             lines.append(f"### Major Stage {stage_num}: {stg['title']} — {stg_status_str}")
             lines.append(f"**Sign-Off Gate**: *{stg['gate']}*")
             lines.append("")
@@ -135,7 +136,7 @@ class PipelineRunner:
                     icon = "🟡"
                 elif st == "Awaiting Review":
                     icon = "🟠"
-                review_str = "Approved" if s.get("approved") else ("Needs Review" if st == "Completed" else "Waiting")
+                review_str = "Approved" if s.get("approved") else ("Review Ready" if st == "Awaiting Review" else ("In Progress" if st == "In Progress" else "Pending"))
                 lines.append(f"| {s['step']} | **{s['role_title']}** | {s['action']} | [`{s['target_output']}`](../../{s['target_output']}) | {icon} {st} | {review_str} |")
 
             lines.append("")
@@ -155,7 +156,7 @@ class PipelineRunner:
         with open(DASHBOARD_FILE, "w", encoding="utf-8") as f:
             f.write("\n".join(lines))
 
-    def init_pipeline(self, pitch: Optional[str] = None):
+    def init_pipeline(self, pitch: Optional[str] = None, overwrite: bool = False):
         """Initializes the pipeline and populates initial deliverable files from templates."""
         plan = self.orchestrator.generate_pitch_to_prototype_plan(pitch)
 
@@ -173,7 +174,7 @@ class PipelineRunner:
         for dest_rel, src_tpl in template_map.items():
             dest_file = BASE_DIR / dest_rel
             dest_file.parent.mkdir(parents=True, exist_ok=True)
-            if not dest_file.exists() and src_tpl.exists():
+            if (overwrite or not dest_file.exists()) and src_tpl.exists():
                 shutil.copyfile(src_tpl, dest_file)
 
         steps_state = []
@@ -201,10 +202,6 @@ class PipelineRunner:
             "steps": steps_state
         }
 
-        # Mark step 1 as In Progress
-        if self.status["steps"]:
-            self.status["steps"][0]["status"] = "In Progress"
-
         self._save_status()
         print(f"\n[Pipeline Initialized]")
         print(f"Mode: {plan['mode_description']}")
@@ -212,6 +209,69 @@ class PipelineRunner:
         print(f"Templates populated in deliverables/:")
         for rel in template_map.keys():
             print(f"  • {rel}")
+
+    def reset_pipeline(self, pitch: Optional[str] = None):
+        """
+        Resets the deliverables/ directory and status back to the starting point.
+        Preserves the deliverables folder structure, clears logs and generated code,
+        and overwrites deliverable files with fresh copies of generic templates.
+        """
+        self.status = self._load_status()
+        active_pitch = pitch if (pitch is not None and pitch != "") else self.status.get("user_pitch")
+
+        # 1. Clean logs directory (preserve .gitkeep if exists)
+        logs_dir = DELIVERABLES_DIR / "logs"
+        if logs_dir.exists():
+            for item in logs_dir.iterdir():
+                if item.is_file() and item.name != ".gitkeep":
+                    item.unlink()
+
+        # 2. Clean generated code (preserve .gitkeep)
+        code_dir = DELIVERABLES_DIR / "code"
+        if code_dir.exists():
+            for item in code_dir.iterdir():
+                if item.name == ".gitkeep":
+                    continue
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+
+        # 3. Clean generated docs that don't belong to starter templates (e.g. LEVEL_DESIGN.md)
+        docs_dir = DELIVERABLES_DIR / "docs"
+        starter_docs = {"GDD.md", "SPRINT_PLAN.md", "TECH_SPEC.md", "PROJECT_DASHBOARD.md", ".gitkeep"}
+        if docs_dir.exists():
+            for item in docs_dir.iterdir():
+                if item.is_file() and item.name not in starter_docs:
+                    item.unlink()
+
+        # 4. Clean extra art and qa files
+        art_dir = DELIVERABLES_DIR / "art"
+        starter_art = {"ART_BIBLE.md", ".gitkeep"}
+        if art_dir.exists():
+            for item in art_dir.iterdir():
+                if item.name in starter_art:
+                    continue
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+
+        qa_dir = DELIVERABLES_DIR / "qa"
+        starter_qa = {"TEST_PLAN.md", "BUG_REPORTS.md", ".gitkeep"}
+        if qa_dir.exists():
+            for item in qa_dir.iterdir():
+                if item.name in starter_qa:
+                    continue
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+
+        # 5. Overwrite deliverable template files & re-init status
+        self.init_pipeline(pitch=active_pitch, overwrite=True)
+        print(f"\n[✓] Deliverables completely reset to clean templates.")
+        print(f"[✓] Pipeline ready to start from Step 1 (Game Designer).")
 
     def update_step_status(self, step_number: int, new_status: str, approved: bool = False):
         """Update step progress."""
@@ -247,7 +307,7 @@ class PipelineRunner:
                 icon = "🟡"
             elif st == "Awaiting Review":
                 icon = "🟠"
-            review = "Approved" if s.get("approved") else ("Review Ready" if st == "Completed" else "Waiting")
+            review = "Approved" if s.get("approved") else ("Review Ready" if st == "Awaiting Review" else ("In Progress" if st == "In Progress" else "Pending"))
             print(f"{icon} Step {s['step']}: [{st.upper()}] {s['role_title']} — {s['action']}")
             print(f"   Deliverable: {s['target_output']} ({review})")
         print()
@@ -294,7 +354,7 @@ class PipelineRunner:
                             icon = "🟡"
                         elif st == "Awaiting Review":
                             icon = "🟠"
-                        review = "Approved" if s.get("approved") else ("Review Ready" if st == "Completed" else "Waiting")
+                        review = "Approved" if s.get("approved") else ("Review Ready" if st == "Awaiting Review" else ("In Progress" if st == "In Progress" else "Pending"))
                         role = s["role_title"][:22]
                         action = s["action"][:30]
                         deliverable = s["target_output"]
@@ -373,11 +433,31 @@ class PipelineRunner:
                 print(f"• Step {step_num} [{s_data['role_title']}] already completed and approved. Skipping.")
                 continue
 
+            if s_data and s_data.get("status") == "Awaiting Review":
+                print(f"[!] Step {step_num} [{s_data['role_title']}] is Awaiting Review.")
+                print(f"    Please review `{s_data['target_output']}` and approve with:")
+                print(f"      python3 orchestration/pipeline_runner.py --approve-step {step_num}")
+                return False
+
             print(f"\n[>] Launching autonomous agent: {s_data['role_title']} (Step {step_num})...")
             ok = self.run_step(step_num, log_callback=log_callback or print)
             if not ok:
                 print(f"[!] Step {step_num} failed. Halting stage execution.")
                 return False
+
+            # Refresh status after execution
+            self.status = self._load_status()
+            s_data = next((s for s in self.status.get("steps", []) if s["step"] == step_num), None)
+            print(f"\n[✓] Step {step_num} [{s_data['role_title']}] authored deliverable: `{s_data['target_output']}`")
+            print(f"    Status: 🟠 Awaiting Review.")
+
+            # If there are subsequent steps in this stage, halt for user sign-off
+            if step_num != target_stage["steps"][-1]:
+                print(f"\n[!] HALTING FOR USER SIGN-OFF:")
+                print(f"    Review deliverable: `{s_data['target_output']}`")
+                print(f"    Approve step with: python3 orchestration/pipeline_runner.py --approve-step {step_num}")
+                print(f"    Then continue stage with: python3 orchestration/pipeline_runner.py --run-stage {stage_number}\n")
+                return True
 
         print(f"\n================================================================================")
         print(f"  MAJOR STAGE {stage_number} COMPLETED — AWAITING USER SIGN-OFF GATE")
@@ -391,6 +471,7 @@ class PipelineRunner:
 def main():
     parser = argparse.ArgumentParser(description="GameDevTeam Background Pipeline Runner")
     parser.add_argument("--init", action="store_true", help="Initialize the pipeline and populate deliverables from templates")
+    parser.add_argument("--reset", action="store_true", help="Reset all deliverables to pristine templates and restart pipeline from Step 1")
     parser.add_argument("--pitch", nargs="?", const="", default=None, help="Optional pitch idea for the pipeline")
     parser.add_argument("--status", action="store_true", help="View current production status and step deliverables")
     parser.add_argument("--watch", nargs="?", const=2, type=int, default=None, help="Watch live dashboard in real-time (default refresh: 2s)")
@@ -403,6 +484,11 @@ def main():
 
     args = parser.parse_args()
     runner = PipelineRunner()
+
+    if args.reset:
+        runner.reset_pipeline(args.pitch)
+        runner.print_status()
+        return
 
     if args.init:
         runner.init_pipeline(args.pitch)
