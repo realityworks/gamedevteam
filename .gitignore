@@ -22,3 +22,6 @@ ENV/
 # Temporary / Scratch files
 *.tmp
 *.log
+
+# Produced game deliverables (managed in separate game repository)
+deliverables/
