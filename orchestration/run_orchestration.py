@@ -22,9 +22,30 @@ def main():
     parser.add_argument("--workflow", type=str, help="Show step-by-step breakdown for a workflow (e.g. pitch_to_prototype)")
     parser.add_argument("--prompt", type=str, help="Identify which roles should respond to a given prompt")
     parser.add_argument("--subagent-spec", type=str, help="Generate subagent prompt JSON for a given role ID")
+    parser.add_argument(
+        "--pitch",
+        nargs="?",
+        const="",
+        default=None,
+        help="Run Pitch to Prototype with an optional general idea (e.g. --pitch 'cyberpunk pinball'). If omitted or empty, triggers autonomous pattern + visual synthesis."
+    )
 
     args = parser.parse_args()
     orchestrator = GameDevOrchestrator()
+
+    if args.pitch is not None:
+        plan = orchestrator.generate_pitch_to_prototype_plan(args.pitch)
+        print(f"\n=======================================================")
+        print(f"  PITCH TO PROTOTYPE WORKFLOW: {plan['mode']}")
+        print(f"=======================================================\n")
+        print(f"Mode Description: {plan['mode_description']}\n")
+        print("Generated Workflow Steps & Prompts:\n")
+        for s in plan["steps"]:
+            print(f"-------------------------------------------------------")
+            print(f"Step {s['step']}: [{s['role_title']}] {s['action']}")
+            print(f"Target Output: {s['target_output']}")
+            print(f"Directive:\n{s['directive']}\n")
+        return
 
     if args.list or len(sys.argv) == 1:
         orchestrator.print_team_status()

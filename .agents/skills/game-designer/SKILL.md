@@ -64,10 +64,33 @@ flowchart TD
 
 ## 3. Step-by-Step Game Design Workflow
 
-### Phase 1: High Concept & Pillars
-1. Identify 3 to 4 non-negotiable **Design Pillars** (e.g. "Kinetic Fluidity", "Tense Resource Scarcity").
-2. Define the target audience, session length, and platform inputs.
-3. Chart the 30-second loop, 10-minute loop, and meta-game retention loop.
+### Phase 1: Pitch Intake & Concept Synthesis
+Depending on whether the user provides a seed idea, execute one of two intake modes:
+
+#### Mode A: User-Provided Pitch
+If the user provides a general pitch or prompt (e.g. *"A sci-fi gravity-flipping stealth platformer"*):
+1. Deconstruct the user's concept into 3 non-negotiable **Design Pillars**.
+2. Identify genre expectations and select 1-2 mechanic subversions to give the game a distinctive edge.
+3. Chart the 30-second loop (Action $\rightarrow$ Feedback $\rightarrow$ Reposition $\rightarrow$ Reward), 10-minute loop, and meta-progression loop.
+
+#### Mode B: Autonomous Design Synthesis (Special Case: No Prompt Provided)
+If no prompt or pitch is supplied, **do NOT default to a generic trope**. Instead, synthesize a novel concept by combining orthogonal **Game Design Patterns** with an **Unconventional Visual Representation**:
+1. **Combine Orthogonal Game Design Patterns (Select 2-3 disparate patterns)**:
+   - *Locomotion / Momentum*: Kinetic recoil propulsion, orbital sling, gravity inversion, wall-running friction.
+   - *Temporal / Causality*: Time-echo / ghost replays (cooperating with past self), asynchronous ticks, scrub-back rewind.
+   - *Spatial / Dimensional*: Non-Euclidean topology, fold-out origami geometry, perspective alignment puzzle-spaces.
+   - *Resource / Friction*: Degradable abilities as ammunition, health-as-currency, memory sacrifice progression.
+   - *Perception / Sensorium*: Echolocation wave visualization, thermal conductivity, light/shadow phase shifting.
+2. **Select an Unconventional Visual Representation**:
+   - *Risograph Print*: Offset grainy textures, neon spot inks, CMYK halftone dithering.
+   - *Architectural Cyanotype*: Pristine white drafting lines on deep Prussian blue blueprint paper.
+   - *Stained-Glass Leadlight*: Heavy dark lead caming framing luminous refractive jewel-tone glass.
+   - *Microscopic Dark-Field*: Phosphorescent bioluminescence against deep aqueous black.
+   - *Bauhaus Geometric*: Primary colors, stark geometric primitives, clean modernist typography.
+   - *Woodblock Ukiyo-e*: Dynamic Japanese woodblock grain, washi paper texture, sumi-e ink washes.
+   - *Tactile Claymation*: Hand-sculpted clay with visible thumbprint seams, stop-motion framerate jitter (12-15 fps).
+3. **Harmonize Mechanics & Visuals**: Ensure the visual style directly reinforces gameplay readability (e.g. sound waves drawn as visible Risograph halftone ripples).
+4. Establish 3 core design pillars and draft the one-sentence hook.
 
 ### Phase 2: Feature Specification & GDD Authoring
 1. Write the GDD using the structured template [GDD_TEMPLATE.md](../../templates/GDD_TEMPLATE.md).

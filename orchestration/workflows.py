@@ -8,14 +8,25 @@ from typing import List, Dict, Any
 WORKFLOWS: Dict[str, Dict[str, Any]] = {
     "pitch_to_prototype": {
         "name": "Pitch to Playable Prototype",
-        "description": "Transforms a raw game concept into a validated technical prototype with core movement and graybox testing.",
+        "description": "Transforms a game pitch (or autonomous design synthesis when no pitch is provided) into a validated technical prototype with core movement, graybox testing, and visual styling.",
+        "input_parameters": {
+            "pitch_prompt": {
+                "type": "string",
+                "required": False,
+                "default": None,
+                "description": "General idea or high concept for the pitch. If omitted or empty, the Game Designer autonomously discovers a novel concept by combining orthogonal game design patterns with an unconventional visual representation."
+            }
+        },
+        "special_cases": {
+            "no_prompt_provided": "Autonomous Ideation: The Game Designer synthesizes a novel concept by selecting 2-3 disparate game design patterns (e.g. inertia recoil + temporal ghost replay + spatial inventory) and coupling them with a distinct, unconventional visual aesthetic (e.g. Risograph halftone, stained-glass refraction, or brutalist blueprint)."
+        },
         "steps": [
             {
                 "step": 1,
                 "role": "game_designer",
-                "action": "Draft Core Mechanics & Design Pillars",
+                "action": "Draft Core Mechanics & Design Pillars (Pitch Intake / Autonomous Synthesis)",
                 "output": "deliverables/docs/GDD.md",
-                "notes": "Define player actions, movement metrics, and the 30-second core loop."
+                "notes": "If pitch provided: expand into full GDD. If no pitch: autonomously synthesize a unique pattern combination + visual representation."
             },
             {
                 "step": 2,

@@ -126,10 +126,19 @@ python3 orchestration/run_orchestration.py --workflow pitch_to_prototype
 
 # Identify which role should handle a task prompt
 python3 orchestration/run_orchestration.py --prompt "We need an inventory state machine and item database"
+
+# Run Pitch to Prototype with a custom idea prompt
+python3 orchestration/run_orchestration.py --pitch "Cyberpunk stealth platformer with gravity manipulation"
+
+# Run Pitch to Prototype with NO prompt (triggers Autonomous Design Synthesis)
+python3 orchestration/run_orchestration.py --pitch
 ```
 
 ### Predefined Workflows:
-1. **`pitch_to_prototype`**: Game Designer pitches core loop $\rightarrow$ Producer schedules prototype sprint $\rightarrow$ Lead Programmer writes architecture spec $\rightarrow$ Art Director provides style bible $\rightarrow$ Level Designer blocks out graybox arena $\rightarrow$ Gameplay Programmer writes character controller $\rightarrow$ Tech Artist sets up shaders/VFX $\rightarrow$ QA executes smoke test.
+1. **`pitch_to_prototype`**: Transforms an idea into a validated technical prototype.
+   - **With user pitch**: Expands the user's high concept into 3 design pillars, a 30-second loop, movement metrics, and GDD.
+   - **Without pitch (Autonomous Synthesis)**: The Game Designer synthesizes an original, non-cliché game concept by combining orthogonal **Game Design Patterns** (e.g. *momentum recoil + time-echo ghost replay + spatial inventory*) with an **Unconventional Visual Representation** (e.g. *Risograph halftone, stained-glass leadlight, architectural cyanotype, or tactile claymation*).
+   - **Pipeline**: Game Designer (Pitch / Autonomous GDD) $\rightarrow$ Producer (Prototype Sprint) $\rightarrow$ Lead Programmer (Tech Architecture) $\rightarrow$ Art Director (Visual Bible) $\rightarrow$ Level Designer (Movement Graybox) $\rightarrow$ Gameplay Dev (Character Controller & FSM) $\rightarrow$ Tech Artist (Master Shaders & VFX) $\rightarrow$ QA (Smoke Test & Edge Cases).
 2. **`feature_sprint`**: 2-week agile feature cycle from Game Designer spec to QA verification.
 3. **`narrative_quest_pipeline`**: Lore bible & dialogue trees $\rightarrow$ Economy alignment $\rightarrow$ Level landmarks $\rightarrow$ Quest state machine $\rightarrow$ Branching QA testing.
 

@@ -99,6 +99,86 @@ class GameDevOrchestrator:
             "prompt": prompt
         }
 
+    def generate_pitch_to_prototype_plan(self, user_pitch: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Generates a tailored execution plan for the Pitch to Prototype workflow.
+        If user_pitch is provided: directs the Game Designer to expand the concept.
+        If user_pitch is empty/None: triggers autonomous design synthesis combining
+        unique game design patterns with an unconventional visual representation.
+        """
+        clean_pitch = user_pitch.strip() if user_pitch else ""
+        workflow = self.get_workflow("pitch_to_prototype")
+        if not workflow:
+            raise ValueError("Workflow 'pitch_to_prototype' not found.")
+
+        if clean_pitch:
+            mode = "USER_PROVIDED_PITCH"
+            mode_description = f"User Concept Expansion: \"{clean_pitch}\""
+            designer_directive = (
+                f"### User Pitch Intake:\n"
+                f"The user has provided the following concept:\n"
+                f"> \"{clean_pitch}\"\n\n"
+                f"### Game Designer Directives:\n"
+                f"1. Deconstruct the user's pitch into 3 distinct Core Design Pillars.\n"
+                f"2. Formulate the primary 30-second gameplay loop (Action -> Feedback -> Reposition -> Reward).\n"
+                f"3. Specify player locomotion metrics (walk/sprint speed, jump height, gravity scale, buffer/coyote frames).\n"
+                f"4. Document the feature spec in `deliverables/docs/GDD.md` using the GDD template.\n"
+                f"5. Hand off scope parameters to the Producer and technical constraints to the Lead Programmer."
+            )
+        else:
+            mode = "AUTONOMOUS_SYNTHESIS"
+            mode_description = "Autonomous Design Synthesis: Unique Pattern Combination + Distinct Visual Representation"
+            designer_directive = (
+                f"### Autonomous Creative Synthesis Mode (No Prompt Provided):\n"
+                f"You must discover and formulate an original, non-cliché game concept by synthesizing a unique combination "
+                f"of orthogonal **Game Design Patterns** paired with an **Unconventional Visual Representation**.\n\n"
+                f"#### 1. Game Design Patterns Matrix (Select 2-3 orthogonal patterns):\n"
+                f"- **Locomotion / Momentum**: Kinetic recoil-propulsion, orbital slinging, gravity inversion, wall-running friction.\n"
+                f"- **Temporal / Causality**: Time-echo / ghost replays (cooperating with past self), asynchronous ticks, scrub-back rewind.\n"
+                f"- **Spatial / Dimensional**: Non-Euclidean topology, fold-out origami geometry, perspective alignment puzzle-spaces.\n"
+                f"- **Resource / Friction**: Degradable abilities as ammunition, health-as-currency, memory sacrifice progression.\n"
+                f"- **Perception / Sensorium**: Echoloaction wave visualization, thermal conductivity, light/shadow phase shifting.\n\n"
+                f"#### 2. Unique Visual Representation (Select 1 distinct aesthetic):\n"
+                f"- **Risograph Print**: Offset grainy textures, neon spot inks, and CMYK halftone screen dithering.\n"
+                f"- **Architectural Cyanotype / Blueprint**: Pristine white drafting lines on deep Prussian blue drafting paper.\n"
+                f"- **Stained-Glass Leadlight**: Heavy black lead caming dividing luminous, refractive colored jewel-tone glass.\n"
+                f"- **Microscopic Dark-Field Bioluminescence**: Phosphorescent organisms against deep aqueous black, chromatic aberration.\n"
+                f"- **Bauhaus Geometric Modernism**: Primary colors (red, yellow, blue), stark geometric primitives, clean typography.\n"
+                f"- **Woodblock Ukiyo-e**: Dynamic Japanese woodblock grain, washi paper texture, and stylized sumi-e ink washes.\n"
+                f"- **Tactile Claymation**: Hand-sculpted clay with visible thumbprint seams, stop-motion framerate jitter (12-15 fps).\n\n"
+                f"#### 3. Synthesis Requirements:\n"
+                f"1. Name the game and define its high concept in one punchy sentence.\n"
+                f"2. Explain how the chosen mechanics patterns create unexpected emergent gameplay.\n"
+                f"3. Explain how the visual representation reinforces player readability and game feel.\n"
+                f"4. Author the complete Game Design Document in `deliverables/docs/GDD.md` following `templates/GDD_TEMPLATE.md`.\n"
+                f"5. Notify the Producer, Lead Programmer, and Art Director to initiate downstream tasks."
+            )
+
+        steps_detail = []
+        for step in workflow["steps"]:
+            role_info = self.get_role(step["role"])
+            step_prompt = designer_directive if step["step"] == 1 else (
+                f"Review deliverables from previous steps and execute Step {step['step']}: "
+                f"{step['action']}. Target output: `{step['output']}`. Notes: {step['notes']}"
+            )
+            steps_detail.append({
+                "step": step["step"],
+                "role_id": step["role"],
+                "role_title": role_info["title"] if role_info else step["role"],
+                "action": step["action"],
+                "target_output": step["output"],
+                "notes": step["notes"],
+                "directive": step_prompt
+            })
+
+        return {
+            "workflow": "pitch_to_prototype",
+            "mode": mode,
+            "mode_description": mode_description,
+            "user_pitch": clean_pitch if clean_pitch else None,
+            "steps": steps_detail
+        }
+
     def get_workflow(self, workflow_name: str) -> Optional[Dict[str, Any]]:
         """Retrieve a predefined multi-stage workflow."""
         return self.workflows.get(workflow_name)
