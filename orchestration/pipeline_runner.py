@@ -183,6 +183,7 @@ class PipelineRunner:
         self._save_status()
 
     def print_status(self):
+        self.status = self._load_status()
         if not self.status:
             print("\nNo active pipeline status found. Initialize one with --init [--pitch '...']")
             return
@@ -196,10 +197,71 @@ class PipelineRunner:
 
         for s in self.status.get("steps", []):
             st = s.get("status", "Pending")
+            icon = "⚪"
+            if st == "Completed":
+                icon = "🟢"
+            elif st == "In Progress":
+                icon = "🟡"
+            elif st == "Awaiting Review":
+                icon = "🟠"
             review = "Approved" if s.get("approved") else ("Review Ready" if st == "Completed" else "Waiting")
-            print(f"Step {s['step']}: [{st.upper()}] {s['role_title']} — {s['action']}")
-            print(f"  Deliverable: {s['target_output']} ({review})")
+            print(f"{icon} Step {s['step']}: [{st.upper()}] {s['role_title']} — {s['action']}")
+            print(f"   Deliverable: {s['target_output']} ({review})")
         print()
+
+    def print_raw_dashboard(self):
+        """Prints the raw Markdown dashboard file to stdout."""
+        if DASHBOARD_FILE.exists():
+            with open(DASHBOARD_FILE, "r", encoding="utf-8") as f:
+                print(f.read())
+        else:
+            print(f"Dashboard file {DASHBOARD_FILE} does not exist yet. Run with --init first.")
+
+    def watch_dashboard(self, interval: int = 2):
+        """Continuously refreshes and renders the live dashboard in the terminal."""
+        import time
+        print(f"Starting live watch on {DASHBOARD_FILE} (refresh: {interval}s)... Press Ctrl+C to exit.")
+        time.sleep(0.5)
+        try:
+            while True:
+                # ANSI clear screen and home cursor
+                sys.stdout.write("\033[H\033[J")
+                sys.stdout.flush()
+                self.status = self._load_status()
+
+                now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print("================================================================================")
+                print(f"  GAMEDEVSTUDIO — LIVE PIPELINE MONITOR   [{now_str}]")
+                print("================================================================================")
+
+                if not self.status:
+                    print("\n[!] No active pipeline found. Run with --init to start.")
+                else:
+                    print(f"Workflow : {self.status.get('workflow')}")
+                    print(f"Mode     : {self.status.get('mode_description')}")
+                    print(f"Pitch    : {self.status.get('user_pitch') or '(Autonomous Synthesis)'}\n")
+                    print(f"{'Step':<6} {'Role':<24} {'Status':<14} {'Review':<12} {'Deliverable'}")
+                    print("-" * 80)
+                    for s in self.status.get("steps", []):
+                        st = s.get("status", "Pending")
+                        icon = "⚪"
+                        if st == "Completed":
+                            icon = "🟢"
+                        elif st == "In Progress":
+                            icon = "🟡"
+                        elif st == "Awaiting Review":
+                            icon = "🟠"
+                        review = "Approved" if s.get("approved") else ("Review Ready" if st == "Completed" else "Waiting")
+                        role = s["role_title"][:22]
+                        action = s["action"][:30]
+                        deliverable = s["target_output"]
+                        print(f"{icon} {s['step']:<4} {role:<24} {st:<14} {review:<12} {deliverable}")
+
+                print("\n--------------------------------------------------------------------------------")
+                print(f"[Live Auto-Refresh every {interval}s]  •  Press Ctrl+C to exit")
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            print("\n[✓] Exited live watch.")
 
 
 def main():
@@ -207,6 +269,8 @@ def main():
     parser.add_argument("--init", action="store_true", help="Initialize the pipeline and populate deliverables from templates")
     parser.add_argument("--pitch", nargs="?", const="", default=None, help="Optional pitch idea for the pipeline")
     parser.add_argument("--status", action="store_true", help="View current production status and step deliverables")
+    parser.add_argument("--watch", nargs="?", const=2, type=int, default=None, help="Watch live dashboard in real-time (default refresh: 2s)")
+    parser.add_argument("--cat", action="store_true", help="Print the raw markdown dashboard to stdout")
     parser.add_argument("--approve-step", type=int, help="Approve and mark a step deliverable as reviewed")
     parser.add_argument("--complete-step", type=int, help="Mark a step as completed")
 
@@ -217,8 +281,12 @@ def main():
         runner.init_pipeline(args.pitch)
         return
 
-    if args.status or len(sys.argv) == 1:
-        runner.print_status()
+    if args.watch is not None:
+        runner.watch_dashboard(interval=args.watch)
+        return
+
+    if args.cat:
+        runner.print_raw_dashboard()
         return
 
     if args.approve_step:
@@ -230,6 +298,10 @@ def main():
     if args.complete_step:
         runner.update_step_status(args.complete_step, "Completed", approved=False)
         print(f"Step {args.complete_step} marked completed. Awaiting review.")
+        runner.print_status()
+        return
+
+    if args.status or len(sys.argv) == 1:
         runner.print_status()
         return
 
