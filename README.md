@@ -158,10 +158,22 @@ python3 orchestration/pipeline_runner.py --init --pitch "Cyberpunk gravity steal
 # Or initialize in autonomous synthesis mode (no prompt provided):
 python3 orchestration/pipeline_runner.py --init
 
-# 2. Check live progress and review gates anytime:
+# 2. Watch live pipeline execution in real-time (auto-refreshes every 2s, press Ctrl+C to exit):
+python3 orchestration/pipeline_runner.py --watch
+
+# Or watch with custom refresh interval (e.g. 1s):
+python3 orchestration/pipeline_runner.py --watch 1
+
+# 3. Check current status snapshot:
 python3 orchestration/pipeline_runner.py --status
 
-# 3. Approve a deliverable when you have reviewed it:
+# 4. Execute autonomous AI agents for a Major Stage (1-4):
+python3 orchestration/pipeline_runner.py --run-stage 1
+
+# 5. Sign off on a Major Stage to unlock the next stage:
+python3 orchestration/pipeline_runner.py --approve-stage 1
+
+# Or sign off on an individual step:
 python3 orchestration/pipeline_runner.py --approve-step 1
 ```
 
