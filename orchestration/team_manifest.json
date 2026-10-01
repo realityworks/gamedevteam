@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "team_name": "GameDevStudio Orchestration",
+  "version": "1.0.0",
+  "description": "Multi-agent game development studio orchestration featuring production, design, engineering, art, and quality assurance.",
+  "roles": {
+    "producer": {
+      "title": "Producer",
+      "skill_name": "producer",
+      "layer": "Executive / Orchestration",
+      "summary": "Schedules all of the project tasks by coordinating with the team leads and game designer.",
+      "coordinates_with": ["game_designer", "lead_programmer", "art_director", "qa_playtester"],
+      "primary_inputs": [
+        "Feature concepts from Game Designer",
+        "Technical estimates from Lead Programmer",
+        "Art pipeline requirements from Art Director",
+        "Defect metrics from QA"
+      ],
+      "primary_outputs": [
+        "deliverables/docs/MASTER_SCHEDULE.md",
+        "deliverables/docs/SPRINT_PLAN.md",
+        "deliverables/docs/RISK_LOG.md"
+      ],
+      "triggers": ["schedule", "sprint", "milestone", "timeline", "producer", "task assignment", "blocker", "triage"]
+    },
+    "art_director": {
+      "title": "Art Director",
+      "skill_name": "art-director",
+      "layer": "Design & Direction",
+      "summary": "Manages communication with the game designer and producer, assigns the tasks for the artists and technical artists.",
+      "coordinates_with": ["game_designer", "producer", "technical_artist", "level_designer"],
+      "primary_inputs": [
+        "Design pillars and visual needs from Game Designer",
+        "Milestone deadlines from Producer",
+        "Technical rendering limits from Lead Programmer"
+      ],
+      "primary_outputs": [
+        "deliverables/art/ART_BIBLE.md",
+        "deliverables/art/STYLE_GUIDE.md",
+        "deliverables/art/PALETTES.md"
+      ],
+      "triggers": ["art", "visuals", "art director", "style guide", "art bible", "palette", "concept art", "mood board"]
+    },
+    "lead_programmer": {
+      "title": "Lead Programmer",
+      "skill_name": "lead-programmer",
+      "layer": "Design & Direction",
+      "summary": "Manages communication with the game designer and producer, assigns the tasks to the development team.",
+      "coordinates_with": ["game_designer", "producer", "gameplay_programmer", "technical_artist", "qa_playtester"],
+      "primary_inputs": [
+        "Mechanics specifications from Game Designer",
+        "Sprint schedule from Producer",
+        "Crash and bug logs from QA"
+      ],
+      "primary_outputs": [
+        "deliverables/docs/TECH_SPEC.md",
+        "deliverables/docs/CODING_STANDARDS.md",
+        "deliverables/code/architecture_rfcs/"
+      ],
+      "triggers": ["architecture", "lead programmer", "tech spec", "engine", "performance budget", "code review", "refactor"]
+    },
+    "game_designer": {
+      "title": "Game Designer",
+      "skill_name": "game-designer",
+      "layer": "Design & Direction",
+      "summary": "Designs gameplay mechanics, systems balancing, game design documents (GDD), and core player loops.",
+      "coordinates_with": ["producer", "lead_programmer", "art_director", "narrative_designer", "level_designer", "qa_playtester"],
+      "primary_inputs": [
+        "High-level creative vision",
+        "Technical constraints from Lead Programmer",
+        "Visual feedback from Art Director"
+      ],
+      "primary_outputs": [
+        "deliverables/docs/GDD.md",
+        "deliverables/docs/SYSTEMS_BALANCING.json",
+        "deliverables/docs/FEATURE_SPECS.md"
+      ],
+      "triggers": ["game design", "mechanics", "gdd", "balancing", "game designer", "core loop", "player experience", "rules"]
+    },
+    "gameplay_programmer": {
+      "title": "Gameplay & Systems Programmer",
+      "skill_name": "gameplay-programmer",
+      "layer": "Production & Specialist",
+      "summary": "Implements player controls, game mechanics, character controllers, physics, and state machines.",
+      "coordinates_with": ["lead_programmer", "game_designer", "technical_artist", "qa_playtester"],
+      "primary_inputs": [
+        "Feature specifications from Game Designer",
+        "Technical architecture and PR standards from Lead Programmer"
+      ],
+      "primary_outputs": [
+        "deliverables/code/src/controllers/",
+        "deliverables/code/src/systems/",
+        "deliverables/code/tests/"
+      ],
+      "triggers": ["gameplay code", "character controller", "player movement", "physics", "state machine", "combat code", "inventory"]
+    },
+    "level_designer": {
+      "title": "Level & Environment Designer",
+      "skill_name": "level-designer",
+      "layer": "Production & Specialist",
+      "summary": "Designs spatial layouts, graybox environments, pacing, encounter flow, and environmental storytelling.",
+      "coordinates_with": ["game_designer", "art_director", "lead_programmer", "narrative_designer", "qa_playtester"],
+      "primary_inputs": [
+        "Player metrics from Game Designer",
+        "Environment kits from Art Director",
+        "Story landmarks from Narrative Designer"
+      ],
+      "primary_outputs": [
+        "deliverables/docs/LEVEL_DESIGN.md",
+        "deliverables/levels/blockouts/",
+        "deliverables/levels/encounters.json"
+      ],
+      "triggers": ["level design", "graybox", "whitebox", "encounter", "level layout", "spatial flow", "pacing", "navmesh"]
+    },
+    "narrative_designer": {
+      "title": "Narrative & Quest Designer",
+      "skill_name": "narrative-designer",
+      "layer": "Production & Specialist",
+      "summary": "Writes world lore, narrative bibles, character bios, branching dialogue trees, quest lines, and barks.",
+      "coordinates_with": ["game_designer", "level_designer", "art_director", "gameplay_programmer"],
+      "primary_inputs": [
+        "Design pillars and themes from Game Designer",
+        "Level progression flow from Level Designer"
+      ],
+      "primary_outputs": [
+        "deliverables/docs/NARRATIVE_BIBLE.md",
+        "deliverables/narrative/dialogue_trees.json",
+        "deliverables/narrative/quests.json"
+      ],
+      "triggers": ["narrative", "story", "dialogue", "quest", "lore", "narrative designer", "barks", "characters"]
+    },
+    "technical_artist": {
+      "title": "Technical Artist",
+      "skill_name": "technical-artist",
+      "layer": "Production & Specialist",
+      "summary": "Bridges art and programming through custom shaders, VFX, rigging, performance budgets, and asset pipeline tooling.",
+      "coordinates_with": ["art_director", "lead_programmer", "gameplay_programmer", "level_designer"],
+      "primary_inputs": [
+        "Visual style targets from Art Director",
+        "Frame budgets and engine APIs from Lead Programmer"
+      ],
+      "primary_outputs": [
+        "deliverables/art/shaders/",
+        "deliverables/art/vfx/",
+        "deliverables/art/rigs/",
+        "deliverables/docs/ASSET_BUDGETS.md"
+      ],
+      "triggers": ["tech art", "shaders", "vfx", "particles", "optimization", "rigging", "materials", "draw calls", "lods"]
+    },
+    "qa_playtester": {
+      "title": "QA & Playtesting Engineer",
+      "skill_name": "qa-playtester",
+      "layer": "Quality & Verification",
+      "summary": "Creates test suites, conducts functional and regression testing, logs repro steps and bug reports, and evaluates game feel.",
+      "coordinates_with": ["producer", "lead_programmer", "gameplay_programmer", "game_designer"],
+      "primary_inputs": [
+        "Testable game builds and PRs",
+        "Acceptance criteria from GDD and Tech Spec"
+      ],
+      "primary_outputs": [
+        "deliverables/qa/TEST_PLAN.md",
+        "deliverables/qa/BUG_REPORTS.md",
+        "deliverables/qa/PLAYTEST_FEEDBACK.md"
+      ],
+      "triggers": ["qa", "testing", "bug report", "playtest", "exploit", "smoke test", "regression", "game feel"]
+    }
+  },
+  "communication_protocols": {
+    "hierarchical_routing": {
+      "design_to_engineering": "Game Designer specifies feature -> Lead Programmer approves architecture & assigns to Gameplay Programmer",
+      "design_to_art": "Game Designer defines theme & affordance -> Art Director establishes style & assigns to Artists/Tech Artist",
+      "scheduling_control": "Producer establishes milestones with Game Designer & Leads -> Leads decompose into sprint tasks",
+      "quality_feedback": "QA reports bugs to Producer & Lead Programmer -> Lead Programmer assigns fix to Gameplay/Tech Artist"
+    }
+  }
+}
