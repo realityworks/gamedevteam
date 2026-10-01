@@ -23,7 +23,7 @@ import json
 import shutil
 import sys
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -35,6 +35,11 @@ try:
     from orchestrator import GameDevOrchestrator
 except ImportError:
     from .orchestrator import GameDevOrchestrator
+
+try:
+    from agent_runner import AgentRunner
+except ImportError:
+    from .agent_runner import AgentRunner
 
 
 MAJOR_STAGES = [
@@ -66,9 +71,11 @@ MAJOR_STAGES = [
 
 
 class PipelineRunner:
-    def __init__(self):
+    def __init__(self, base_dir: Optional[Path] = None):
+        self.base_dir = base_dir or BASE_DIR
         self.orchestrator = GameDevOrchestrator()
         self.status = self._load_status()
+        self.agent_runner = AgentRunner(self.base_dir)
 
     def _load_status(self) -> Dict[str, Any]:
         if STATUS_FILE.exists():
@@ -328,6 +335,63 @@ class PipelineRunner:
             print("[🎉] All 4 Major Stages complete! Final Milestone reached.\n")
         self._save_status()
 
+    def run_step(self, step_number: int, log_callback: Optional[Callable[[str], None]] = None) -> bool:
+        """Executes the autonomous agent for a specific step."""
+        self.status = self._load_status()
+        step = next((s for s in self.status.get("steps", []) if s["step"] == step_number), None)
+        if not step:
+            print(f"Error: Step {step_number} not found.")
+            return False
+
+        step["status"] = "In Progress"
+        self._save_status()
+
+        user_pitch = self.status.get("user_pitch")
+        success = self.agent_runner.run_step_process(step, user_pitch, log_callback=log_callback or print)
+
+        if success:
+            step["status"] = "Completed"
+            step["completed_at"] = datetime.datetime.now().isoformat()
+            self._save_status()
+            return True
+        else:
+            step["status"] = "Failed"
+            self._save_status()
+            return False
+
+    def run_stage(self, stage_number: int, log_callback: Optional[Callable[[str], None]] = None) -> bool:
+        """Runs all steps for a Major Stage sequentially, halting at the sign-off gate."""
+        target_stage = next((stg for stg in MAJOR_STAGES if stg["stage"] == stage_number), None)
+        if not target_stage:
+            print(f"Error: Unknown stage {stage_number}. Available: 1, 2, 3, 4")
+            return False
+
+        print(f"\n================================================================================")
+        print(f"  EXECUTING MAJOR STAGE {stage_number}: {target_stage['title'].upper()}")
+        print(f"================================================================================")
+        print(f"Deliverables Target: {', '.join([str(s) for s in target_stage['steps']])}\n")
+
+        for step_num in target_stage["steps"]:
+            self.status = self._load_status()
+            s_data = next((s for s in self.status.get("steps", []) if s["step"] == step_num), None)
+            if s_data and s_data.get("status") == "Completed" and s_data.get("approved"):
+                print(f"• Step {step_num} [{s_data['role_title']}] already completed and approved. Skipping.")
+                continue
+
+            print(f"\n[>] Launching autonomous agent: {s_data['role_title']} (Step {step_num})...")
+            ok = self.run_step(step_num, log_callback=log_callback or print)
+            if not ok:
+                print(f"[!] Step {step_num} failed. Halting stage execution.")
+                return False
+
+        print(f"\n================================================================================")
+        print(f"  MAJOR STAGE {stage_number} COMPLETED — AWAITING USER SIGN-OFF GATE")
+        print(f"================================================================================")
+        print(f"Sign-off Gate: {target_stage['gate']}")
+        print(f"Review your deliverables in deliverables/, then sign off with:")
+        print(f"  python3 orchestration/pipeline_runner.py --approve-stage {stage_number}\n")
+        return True
+
 
 def main():
     parser = argparse.ArgumentParser(description="GameDevTeam Background Pipeline Runner")
@@ -336,6 +400,8 @@ def main():
     parser.add_argument("--status", action="store_true", help="View current production status and step deliverables")
     parser.add_argument("--watch", nargs="?", const=2, type=int, default=None, help="Watch live dashboard in real-time (default refresh: 2s)")
     parser.add_argument("--cat", action="store_true", help="Print the raw markdown dashboard to stdout")
+    parser.add_argument("--run-stage", type=int, help="Execute autonomous agents for a Major Stage (1-4)")
+    parser.add_argument("--run-step", type=int, help="Execute autonomous agent for an individual step (1-8)")
     parser.add_argument("--approve-step", type=int, help="Approve and mark a step deliverable as reviewed")
     parser.add_argument("--approve-stage", type=int, help="Approve an entire Major Stage (1-4) and unlock next stage")
     parser.add_argument("--complete-step", type=int, help="Mark a step as completed")
@@ -345,6 +411,14 @@ def main():
 
     if args.init:
         runner.init_pipeline(args.pitch)
+        return
+
+    if args.run_stage:
+        runner.run_stage(args.run_stage)
+        return
+
+    if args.run_step:
+        runner.run_step(args.run_step)
         return
 
     if args.watch is not None:
